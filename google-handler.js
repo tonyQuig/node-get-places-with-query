@@ -1,50 +1,48 @@
 const https = require('https');
+const googleMapsClient = require('@google/maps').createClient({
+    key: 'AIzaSyAtqCxfa8V40v9sjJzB-UYvkNLHAH3cC7k',
+    Promise: Promise
+});
+// var Promise = require('q').Promise;
+
 
 var GoogleHandler = function () {
 
     var key = [YOUR_API_KEY];
     var googlePlacesBasePath = 'https://maps.googleapis.com/maps/api/place/findplacefromtext/json?';
 
-    var getPlaceWithQuery = function (queryParam) {
-        var url = googlePlacesBasePath + "input=" + queryParam + '&inputtype=textquery' + '&fields=formatted_address,name' + "&key=" + key;
-        console.log('Url: ', url);
+    var getPlaceWithQuery = async function (queryParam) {
 
-        https.get(googlePlacesBasePath, (res) => {
+        return new Promise(function (resolve, reject) {
+            googleMapsClient.places({
+                    query: queryParam
+                }).asPromise()
+                .then(function (response) {
+                    console.log('Google result: ', response.json.results);
+                    resolve(response.json.results);
+                })
+                .catch((err) => {
+                    console.log('Error in google api request: ', err);
+                });
+        })
+    }
 
-            const { statusCode } = res;
-            const contentType = res.headers['content-type'];
-
-            let error;
-            if (statusCode !== 200) {
-                error = new Error('Request Failed.\n' +
-                    `Status Code: ${statusCode}`);
-            } else if (!/^application\/json/.test(contentType)) {
-                error = new Error('Invalid content-type.\n' +
-                    `Expected application/json but received ${contentType}`);
-            }
-            if (error) {
-                console.error(error.message);
-                // Consume response data to free up memory
-                res.resume();
-                return;
-            }
-
-            res.setEncoding('utf8');
-            let rawData = '';
-            res.on('data', (chunk) => { rawData += chunk; });
-            res.on('end', () => {
-                try {
-                    const parsedData = JSON.parse(rawData);
-                    console.log('PARSED DATA: ', parsedData);
-                } catch (e) {
-                    console.error(e.message);
-                }
-            });
+    var getReviewsForAPlace = async function (placeId) {
+        return new Promise(function(resolve, reject){
+            googleMapsClient.place({
+                placeid: placeId
+            })
+            .asPromise()
+            .then(function(response) {
+                console.log('Google place details result: ', response);
+                resolve(response.json.result.reviews);
+            })
         })
     }
 
     return {
-        getPlaceWithQuery: getPlaceWithQuery
+        getPlaceWithQuery: getPlaceWithQuery,
+        getReviewsForAPlace: getReviewsForAPlace
     }
 }();
 
