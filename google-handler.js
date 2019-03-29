@@ -1,14 +1,12 @@
 const https = require('https');
+// Google maps client requires a valid places api key.
 const googleMapsClient = require('@google/maps').createClient({
-    key: 'AIzaSyAtqCxfa8V40v9sjJzB-UYvkNLHAH3cC7k',
+    key: [YOUR_API_KEY],
     Promise: Promise
 });
-// var Promise = require('q').Promise;
-
 
 var GoogleHandler = function () {
 
-    var key = [YOUR_API_KEY];
     var googlePlacesBasePath = 'https://maps.googleapis.com/maps/api/place/findplacefromtext/json?';
 
     var getPlaceWithQuery = async function (queryParam) {
